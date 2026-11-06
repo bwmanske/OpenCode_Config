@@ -1,0 +1,105 @@
+{
+  "$schema": "https://opencode.ai/config.json",
+
+  // "model": "lmstudio/qwen/qwen3.6-27b",
+  "model": "lmstudio/qwen/qwen3.8-27b",
+  // "model": "lmstudio/jackrong/qwopus3.8-27b-coder-fast",
+
+  // Core settings configuration block
+  "update": "auto",      // Options: "auto", "notify", or "disable"
+  "snapshots": true,
+
+  // ==========================================
+  // PERMISSIONS (Tool execution safeguards)
+  // Rules are evaluated top-to-bottom: last match wins.
+  // ==========================================
+  "permissions": [
+    // 1. Broad Baseline: Always prompt ('ask') before executing shell commands
+    { "action": "shell", "resource": "*", "effect": "ask" },
+
+    // 2. Safe Shell Exceptions: Allow fast, read-only git lookups without prompts
+    { "action": "shell", "resource": "git status *", "effect": "allow" },
+    { "action": "shell", "resource": "git diff *", "effect": "allow" },
+    { "action": "shell", "resource": "ls *", "effect": "allow" },
+
+    // 3. Dangerous Shell Hard-Denies: Block destructive or irreversible actions completely
+    { "action": "shell", "resource": "git push *", "effect": "deny" },
+    { "action": "shell", "resource": "rm *", "effect": "deny" },
+    { "action": "shell", "resource": "sudo *", "effect": "deny" },
+
+    // 4. File-System Restraints: Secure project parameters
+    { "action": "external_directory", "resource": "*", "effect": "ask" } // Ask if LLM tries to access folders outside project workspace
+  ],
+
+  // ==========================================
+  // POLICIES (Resource restrictions)
+  // Blocks cloud leaks or unapproved LLM providers globally.
+  // ==========================================
+  "policies": [
+    // Last match wins (no specificity rule): broad deny first, exception after.
+    // A denied provider disappears from the catalog even with valid credentials.
+    { "action": "provider.use", "resource": "*", "effect": "deny" },
+    { "action": "provider.use", "resource": "lmstudio", "effect": "allow" }
+  ],
+
+  "compaction": {
+    "auto": true,
+    // Trigger = inputWindow − (inputWindow × buffer), where inputWindow = min(limit.input, limit.context).
+    // With input = context = 205555: 205555 − round(205555 × 0.40) = 205555 − 82222 = 123333 tokens (~60% of the context window).
+    "buffer": "40%",
+    "keep": {
+      "tokens": 15000
+    }
+  },
+
+  "providers": {
+    "lmstudio": {
+      "name": "LM Studio (Local)",
+      "package": "aisdk:@ai-sdk/openai-compatible", // Replaces v1 'npm' string key
+      "compatibility": {
+        "streamUsage": true                        // Documented control for stream_options.include_usage (default true; kept explicit)
+      },
+      "settings": {
+        "apiKey": "not-needed",                    // Restored from v1 options.apiKey; AI SDK runtime expects a key at construction
+        "baseURL": "http://localhost:1234/v1",    // <-- Add this here if you use non-default ports or remote hosts
+        "timeout": 12000000,
+        "chunkTimeout": false
+      },
+      "models": {
+        "qwen/qwen3.6-27b": {
+          "name": "Qwen3.6 (local)",
+          "body": {
+            "response_format": { "type": "text" } // Force standard text mode to prevent grammar errors
+          },
+          "limit": {
+            "context": 205555,
+            "input": 205555,
+            "output": 8192
+          }
+        },
+        "qwen/qwen3.8-27b": {
+          "name": "Qwen3.8 (local)",
+          "body": {
+            "response_format": { "type": "text" } // Force standard text mode to prevent grammar errors
+          },
+          "limit": {
+            "context": 205555,
+            "input": 205555,
+            "output": 8192
+          }
+        },
+        "jackrong/qwopus3.8-27b-coder-fast": {
+          "name": "Qwopus3.8 (local)",
+          "body": {
+            "response_format": { "type": "text" } // Force standard text mode to prevent grammar errors
+          },
+          "limit": {
+            "context": 205555,
+            "input": 205555,
+            "output": 8192
+          }
+        }
+      }
+    }
+  }
+}

@@ -1,0 +1,55 @@
+{
+  "$schema": "https://opencode.ai/config.json",
+  
+  "model": "lmstudio/qwen/qwen3.8-27b",
+
+  "compaction": {
+    "auto": true,
+    "buffer": 85555, 
+    "keep": {
+      "tokens": 15000 
+    }
+  },
+
+  "providers": {
+    "lmstudio": {
+      "name": "LM Studio (Local)",
+      "package": "@ai-sdk/openai-compatible", // Replaces v1 'npm' string key
+      "headers": {
+        "Authorization": "Bearer not-needed" // Cleanly supplies any required auth mappings
+      },
+      "body": {
+        "includeUsage": true
+      },
+      "settings": {
+		"baseURL": "http://localhost:1234/v1", // <-- Add this here if you use non-default ports or remote hosts
+        "timeout": 12000000,
+        "chunkTimeout": false
+      },
+      "models": {
+        "qwen/qwen3.6-27b": {
+          "name": "Qwen3.6 (local)",
+          "body": {
+            "response_format": { "type": "text" } // Force standard text mode to prevent grammar errors
+          },
+          "limit": {
+            "context": 205555,
+            "input": 120000,
+            "output": 8192
+          }
+        },
+        "qwen/qwen3.8-27b": {
+          "name": "Qwen3.8 (local)",
+          "body": {
+            "response_format": { "type": "text" } // Force standard text mode to prevent grammar errors
+          },
+          "limit": {
+            "context": 205555,
+            "input": 120000,
+            "output": 8192
+          }
+        }
+      }
+    }
+  }
+}

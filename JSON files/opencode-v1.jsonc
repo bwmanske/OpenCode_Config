@@ -1,0 +1,43 @@
+{
+  "$schema": "https://opencode.ai/config.json",
+  "compaction": {
+    "auto": true,
+    "buffer": 85555, // 125555, // Triggers compaction when usage hits 120,000 (205,555 - 125,555)
+    "keep": {
+      "tokens": 15000 // Retains your 15,000 most recent chat tokens alongside the summary
+    }
+  },
+  "provider": {
+    "lmstudio": {
+      "npm": "@ai-sdk/openai-compatible",
+      "name": "LM Studio (Local)",
+      "options": {
+        "baseURL": "http://localhost:1234/v1/",
+        "apiKey": "not-needed",
+        "includeUsage": true,
+		"timeout": 12000000,
+		"chunkTimeout": false
+      },
+      "limit": {
+        "context": 205555,   // Set this exactly to match your LM Studio Context
+        "input":   120000,   // Explicitly match your input limit
+        "output":    8192    // Standard maximum generation allowance
+      },
+      "models": {
+        "qwen/qwen3.6-27b": {
+          "name": "Qwen3.6 (local)",
+          "strictTools": false,
+          "experimental_loose_tool_matching": true,
+          "extraArgs": { "response_format": { "type": "json_object" } }
+        },
+        "qwen/qwen3.8-27b": {
+          "name": "Qwen3.8 (local)",
+          "strictTools": false,
+          "experimental_loose_tool_matching": true,
+          "extraArgs": { "response_format": { "type": "json_object" } }
+        }
+      }
+    }
+  },
+  "model": "lmstudio/qwen/qwen3.8-27b" // Fixed duplicate root property key
+}
